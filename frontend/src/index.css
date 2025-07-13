@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Mobil qurilmalar uchun */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .product-card img {
+    height: 160px !important;
+  }
+  
+  .product-card h3 {
+    font-size: 0.875rem !important;
+  }
+  
+  .product-card .price {
+    font-size: 1rem !important;
+  }
+}

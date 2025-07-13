@@ -4,7 +4,7 @@ export function formatPrice(price: number): string {
     currency: 'UZS',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(price).replace('UZS', 'so\'m');
+  }).format(price);
 }
 
 export function formatDate(date: Date): string {

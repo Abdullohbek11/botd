@@ -8,8 +8,25 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
+    host: '0.0.0.0',
+    port: 5174,
+    strictPort: true,
+    cors: true,
     headers: {
-      'ngrok-skip-browser-warning': '1'
+      'ngrok-skip-browser-warning': 'true',
+      'User-Agent': 'TelegramWebApp',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      'Access-Control-Allow-Headers': '*'
     }
   },
+  preview: {
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+      'User-Agent': 'TelegramWebApp',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      'Access-Control-Allow-Headers': '*'
+    }
+  }
 });

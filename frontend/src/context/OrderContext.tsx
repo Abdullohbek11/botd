@@ -3,7 +3,7 @@ import { Order, CartItem } from '../types';
 
 interface OrderContextType {
   orders: Order[];
-  createOrder: (items: CartItem[], customerInfo: { phone: string; location: string; address?: string }) => void;
+  createOrder: (items: CartItem[], customerInfo: { phone: string; location: string; address?: string; name?: string }) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
   getOrderById: (orderId: string) => Order | undefined;
 }
@@ -13,20 +13,26 @@ const OrderContext = createContext<OrderContextType | undefined>(undefined);
 export function OrderProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   
-  const createOrder = (items: CartItem[], customerInfo: { phone: string; location: string; address?: string }) => {
+  const createOrder = (items: CartItem[], customerInfo: { phone: string; location: string; address?: string; name?: string }) => {
     const newOrder: Order = {
       id: Date.now().toString(),
       items,
-      total: items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
+      total: items.reduce((sum, item) => sum + (Number((item as any).price ?? (item as any).product?.price ?? 0) * Number(item.quantity)), 0),
       status: 'pending',
       createdAt: new Date(),
       customerInfo
     };
-    
     setOrders(prev => [newOrder, ...prev]);
-    
-    // Simulate sending to admin (in real app, this would be an API call)
-    console.log('Order sent to admin:', newOrder);
+    // API ga yuborish
+    fetch('http://localhost:8000/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newOrder)
+    })
+      .then(res => res.json())
+      .then(data => {
+        // xabar chiqaring yoki local state yangilang
+      });
   };
   
   const updateOrderStatus = (orderId: string, status: Order['status']) => {

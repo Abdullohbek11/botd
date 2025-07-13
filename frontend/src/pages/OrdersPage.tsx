@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Package, CheckCircle } from 'lucide-react';
 import { useOrders } from '../context/OrderContext';
+import { Header } from '../components/Header';
 import { formatPrice, formatDate, getOrderStatusText, getOrderStatusColor } from '../utils/formatters';
 
 export function OrdersPage() {
@@ -12,19 +13,16 @@ export function OrdersPage() {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <Link to="/" className="flex items-center text-gray-600 hover:text-blue-600">
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Orqaga
-            </Link>
-          </div>
+    <div className="min-h-screen bg-[#F4F5F5]">
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mb-6">
+          <Link to="/" className="flex items-center text-gray-600 hover:text-[#7000FF]">
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Orqaga
+          </Link>
         </div>
-      </header>
-      
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Buyurtmalarim</h1>
         
         {orders.length === 0 ? (
@@ -34,7 +32,7 @@ export function OrdersPage() {
             <p className="text-gray-600 mb-6">Hali birorta ham buyurtma bermagansiz</p>
             <Link
               to="/"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="inline-block bg-[#7000FF] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#6000E0] transition-colors"
             >
               Xarid qilishni boshlash
             </Link>
@@ -107,7 +105,7 @@ export function OrdersPage() {
             ))}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

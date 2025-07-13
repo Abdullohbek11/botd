@@ -1,5 +1,5 @@
-import React from 'react';
-import { Star, ShoppingCart } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { Product } from '../types';
 import { formatPrice } from '../utils/formatters';
 import { useCart } from '../context/CartContext';
@@ -11,66 +11,96 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const [isLiked, setIsLiked] = useState(false);
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     addItem(product);
   };
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLiked(!isLiked);
+  };
   
   return (
     <Link to={`/product/${product.id}`} className="block">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
-        <div className="relative">
+      <div className="bg-white rounded-xl overflow-hidden group relative">
+        {/* Image container */}
+        <div className="relative aspect-square">
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
+          {/* Discount badge */}
           {product.discount && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
+            <div className="absolute top-2 left-2 bg-[#FF0000] text-white px-2 py-1 rounded-lg text-sm font-medium">
               -{product.discount}%
             </div>
           )}
+          {/* Like button */}
+          <button
+            onClick={handleLike}
+            className="absolute top-2 right-2 p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-colors"
+          >
+            <Heart
+              className={`h-5 w-5 ${isLiked ? 'fill-[#FF0000] text-[#FF0000]' : 'text-gray-400'}`}
+            />
+          </button>
+          {/* Out of stock overlay */}
           {!product.inStock && (
-            <div className="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
-              <span className="text-white font-medium">Mavjud emas</span>
+            <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center">
+              <span className="text-gray-900 font-medium">Mavjud emas</span>
             </div>
           )}
         </div>
         
-        <div className="p-4">
-          <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
+        {/* Content */}
+        <div className="p-3">
+          {/* Title */}
+          <h3 className="text-3xl font-extrabold text-gray-900 line-clamp-2 mb-1 min-h-[40px]">
             {product.name}
           </h3>
           
-          <div className="flex items-center mb-2">
-            <div className="flex items-center">
-              <Star className="h-4 w-4 text-yellow-400 fill-current" />
-              <span className="text-sm text-gray-600 ml-1">{product.rating}</span>
+          {/* Sharx va yulduzcha olib tashlandi */}
+          
+          {/* Installment */}
+          <div className="bg-[#F4F5F5] rounded-lg p-1.5 mb-2">
+            <div className="text-xs text-gray-600">
+              {Math.ceil(product.price / 12)} so'm/oyiga
             </div>
-            <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
           </div>
           
-          <div className="flex items-center justify-between">
+          {/* Price and action */}
+          <div className="flex items-end justify-between">
             <div>
               <div className="text-lg font-bold text-gray-900">
-                {formatPrice(product.price)}
+                {formatPrice(product.price)} so'm
               </div>
-              {product.originalPrice && (
-                <div className="text-sm text-gray-500 line-through">
-                  {formatPrice(product.originalPrice)}
-                </div>
-              )}
+              {/* Asl narxi (originalPrice) olib tashlandi */}
             </div>
             
             <button
               onClick={handleAddToCart}
               disabled={!product.inStock}
-              className="p-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="p-2 bg-[#7000FF] text-white rounded-lg hover:bg-[#6000E0] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               <ShoppingCart className="h-4 w-4" />
             </button>
           </div>
+
+          {/* Express delivery badge */}
+          {product.express && (
+            <div className="mt-2 flex items-center">
+              <img
+                src="/express-badge.svg"
+                alt="Express delivery"
+                className="h-4 w-4 mr-1"
+              />
+              <span className="text-xs text-[#FF0000]">Tezkor yetkazib berish</span>
+            </div>
+          )}
         </div>
       </div>
     </Link>

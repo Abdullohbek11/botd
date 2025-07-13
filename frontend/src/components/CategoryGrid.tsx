@@ -8,34 +8,56 @@ interface CategoryGridProps {
 
 export function CategoryGrid({ onCategorySelect, selectedCategory }: CategoryGridProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Kategoriyalar</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-4">
+    <div className="bg-white rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">Kategoriyalar</h2>
+        <button className="text-[#7000FF] text-sm hover:underline">
+          Barchasini ko'rish
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
         <button
           onClick={() => onCategorySelect('')}
-          className={`p-4 rounded-lg border-2 transition-all ${
+          className={`flex flex-col items-center p-4 rounded-xl transition-all ${
             selectedCategory === null || selectedCategory === ''
-              ? 'border-pink-500 bg-pink-50'
-              : 'border-gray-200 hover:border-pink-300'
+              ? 'bg-[#F4F5F5]'
+              : 'hover:bg-[#F4F5F5]'
           }`}
         >
-          <div className="text-2xl mb-2">🛍️</div>
-          <div className="text-sm font-medium text-gray-900">Barchasi</div>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7000FF] to-[#9F3FFF] flex items-center justify-center mb-3">
+            <span className="text-2xl text-white">🛍️</span>
+          </div>
+          <div className="text-sm font-medium text-gray-900 text-center">Barchasi</div>
         </button>
         
         {categories.map((category) => (
           <button
             key={category.id}
             onClick={() => onCategorySelect(category.id)}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`flex flex-col items-center p-4 rounded-xl transition-all ${
               selectedCategory === category.id
-                ? 'border-pink-500 bg-pink-50'
-                : 'border-gray-200 hover:border-pink-300'
+                ? 'bg-[#F4F5F5]'
+                : 'hover:bg-[#F4F5F5]'
             }`}
           >
-            <div className="text-2xl mb-2">{category.icon}</div>
-            <div className="text-sm font-medium text-gray-900">{category.name}</div>
-            <div className="text-xs text-gray-500">{category.productCount}</div>
+            <div 
+              className={`w-16 h-16 rounded-full bg-gradient-to-br from-[#7000FF] to-[#9F3FFF] flex items-center justify-center mb-2 ${
+                selectedCategory === category.id ? 'ring-4 ring-[#7000FF] ring-opacity-20' : ''
+              }`}
+            >
+              {category.image ? (
+                <img src={category.image} alt={category.name} className="w-12 h-12 object-cover rounded-full" />
+              ) : (
+                <span className="text-2xl text-white">{category.icon}</span>
+              )}
+            </div>
+            <div className="text-xs font-medium text-gray-900 text-center line-clamp-2 min-h-[32px]">
+              {category.name}
+            </div>
+            <div className="text-[10px] text-gray-500 mt-1">
+              {category.productCount} ta mahsulot
+            </div>
           </button>
         ))}
       </div>

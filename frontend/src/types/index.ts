@@ -10,6 +10,7 @@ export interface Product {
   reviews: number;
   discount?: number;
   inStock: boolean;
+  costPrice?: number; // asl narxi (tannarxi), faqat admin uchun
 }
 
 export interface Category {
