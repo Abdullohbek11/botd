@@ -26,6 +26,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
+
 def read_json(file_path):
     if not os.path.exists(file_path):
         return []
@@ -78,6 +81,75 @@ def send_order_to_group(order, order_number):
         print("Telegram API javobi:", r.text)
     except Exception as e:
         print("Telegram API xatolik:", e)
+
+def send_daily_stats():
+    try:
+        now = datetime.datetime.now()
+        today_13 = now.replace(hour=13, minute=0, second=0, microsecond=0)
+        if now >= today_13:
+            start = today_13 - datetime.timedelta(days=1)
+            end = today_13
+        else:
+            start = today_13 - datetime.timedelta(days=2)
+            end = today_13 - datetime.timedelta(days=1)
+        orders = read_json(ORDERS_FILE)
+        product_stats = {}
+        total_sum = 0
+        total_orders = 0
+        customer_orders = []
+        for order in orders:
+            created = order.get('created_at')
+            if created:
+                try:
+                    created_dt = datetime.datetime.fromisoformat(created)
+                except Exception:
+                    continue
+                if not (start <= created_dt < end):
+                    continue
+            total_orders += 1
+            order_sum = 0
+            customer_name = order.get('customerInfo', {}).get('name', 'Noma\'lum')
+            order_id = order.get('id', 'N/A')
+            for item in order.get('items', []):
+                name = item.get('name', '')
+                quantity = int(item.get('quantity', 1))
+                price = int(item.get('price', 0))
+                item_total = quantity * price
+                order_sum += item_total
+                if name not in product_stats:
+                    product_stats[name] = {'quantity': 0, 'total': 0}
+                product_stats[name]['quantity'] += quantity
+                product_stats[name]['total'] += item_total
+            total_sum += order_sum
+            items_str = ', '.join([f"{item.get('name', '')} — {item.get('quantity', 1)} dona" for item in order.get('items', [])])
+            customer_orders.append(f"{customer_name} (#{order_id}): {items_str}")
+        if not product_stats:
+            stats_text = 'So\'nggi 24 soatda buyurtmalar yo\'q.'
+        else:
+            stats_text = f'📊 So\'nggi 24 soat (13:00–13:00) buyurtmalar statistikasi:\n\n'
+            stats_text += 'Mahsulotlar:\n'
+            for name, data in product_stats.items():
+                stats_text += f'{name} — {data["quantity"]} dona, {data["total"]} so\'m\n'
+            stats_text += f'\nJami buyurtmalar: {total_orders} ta\n'
+            stats_text += f'Jami summa: {total_sum} so\'m\n'
+            if customer_orders:
+                stats_text += '\nMijozlar:\n'
+                for customer_order in customer_orders:
+                    stats_text += f'- {customer_order}\n'
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": GROUP_CHAT_ID,
+            "text": stats_text
+        }
+        r = requests.post(url, json=payload, timeout=5)
+        print("Kunlik statistika yuborildi:", r.text)
+    except Exception as e:
+        print("Kunlik statistika xatolik:", e)
+
+# --- Scheduler ---
+scheduler = BackgroundScheduler()
+scheduler.add_job(send_daily_stats, 'cron', hour=13, minute=0)
+scheduler.start()
 
 # --- PRODUCTS ---
 @app.get("/products")
