@@ -19,13 +19,9 @@ export function HomePage() {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!selectedCategory) return matchesSearch;
-    return matchesSearch && String(product.category_id) === String(selectedCategory);
+    const matchesCategory = !selectedCategory || product.category_id === selectedCategory || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
-  // Agar filter natijasida hech narsa topilmasa, barcha mahsulotlarni ko'rsat
-  if (filteredProducts.length === 0) {
-    filteredProducts = products;
-  }
 
   const scrollCategories = (direction: 'left' | 'right') => {
     const container = document.getElementById('categories-container');
@@ -105,7 +101,7 @@ export function HomePage() {
               </button>
             ))}
           </div>
-          
+
           <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
             <button 
               onClick={() => scrollCategories('right')}
@@ -115,69 +111,67 @@ export function HomePage() {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Products */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {/* Products Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6">
           {filteredProducts.map((product) => (
             <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <Link to={`/product/${product.id}`}>
-                <div className="relative">
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} className="w-full h-32 object-cover rounded-t-lg" />
-                  ) : (
-                    <div className="w-full h-32 bg-gray-200 rounded-t-lg flex items-center justify-center">
-                      <span className="text-gray-400 text-2xl">📦</span>
-                    </div>
+              <div className="relative">
+                <Link to={`/product/${product.id}`} className="block">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-t-lg"
+                  />
+                  {product.discount > 0 && (
+                    <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                      -{product.discount}%
+                    </span>
                   )}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (isInFavorites(product.id)) {
-                        removeFromFavorites(product.id);
-                      } else {
-                        addToFavorites(product);
-                      }
-                    }}
-                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <Heart 
-                      className={`h-4 w-4 ${
-                        isInFavorites(product.id) 
-                          ? 'fill-red-500 text-red-500' 
-                          : 'text-gray-400'
-                      }`} 
-                    />
-                  </button>
-                </div>
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm text-gray-900 mb-1 line-clamp-2">
+                </Link>
+                <button
+                  onClick={() =>
+                    isInFavorites(product.id)
+                      ? removeFromFavorites(product.id)
+                      : addToFavorites(product.id)
+                  }
+                  className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:text-red-500 z-10"
+                >
+                  <Heart
+                    className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                      isInFavorites(product.id) ? 'fill-[#7000FF] text-[#7000FF]' : ''
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="p-2 sm:p-3 space-y-1 sm:space-y-2">
+                <Link to={`/product/${product.id}`} className="block">
+                  <h3 className="text-xl font-bold text-gray-900 line-clamp-2 min-h-8 sm:min-h-10">
                     {product.name}
                   </h3>
-                  <p className="text-[#7000FF] font-bold text-sm">
-                    {formatPrice(product.price)} so'm
-                  </p>
-                </div>
-              </Link>
-              <div className="px-3 pb-3">
+                  <div className="mt-1 space-y-1">
+                    {/* Sharx va yulduzcha olib tashlandi */}
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-sm sm:text-base font-semibold">
+                        {formatPrice(product.price)}
+                      </span>
+                      {/* Asl narxi (originalPrice) olib tashlandi */}
+                    </div>
+                  </div>
+                </Link>
+
                 <button
                   onClick={() => addItem(product)}
-                  className="w-full bg-[#7000FF] text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#6000E0] transition-colors flex items-center justify-center space-x-1"
+                  className="w-full mt-1 sm:mt-2 bg-gray-100 hover:bg-[#7000FF] hover:text-white text-gray-800 rounded-lg py-1.5 sm:py-2 px-3 sm:px-4 flex items-center justify-center space-x-1 sm:space-x-2 transition-colors"
                 >
-                  <ShoppingCart className="h-4 w-4" />
-                  <span>Savatga</span>
+                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="text-xs sm:text-sm font-medium">Savatga</span>
                 </button>
               </div>
             </div>
           ))}
         </div>
-        
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Mahsulot topilmadi</p>
-          </div>
-        )}
       </div>
     </div>
   );
