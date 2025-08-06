@@ -15,14 +15,14 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   // API'dan mahsulotlarni olish
   useEffect(() => {
-    fetch('http://localhost:8000//api/products')
+    fetch('http://95.130.227.121:8001/products')
       .then(res => res.json())
       .then(data => setProducts(data));
   }, []);
 
-  // Mahsulot qo‘shish
+  // Mahsulot qo'shish
   const addProduct = (product: any) => {
-    fetch('http://localhost:8000//api/products', {
+    fetch('http://95.130.227.121:8001/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...product, id: String(product.id) })
@@ -31,9 +31,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       .then(newProduct => setProducts(prev => [...prev, newProduct]));
   };
 
-  // Mahsulot o‘chirish (backendga so‘rov yuboriladi)
+  // Mahsulot o'chirish (backendga so'rov yuboriladi)
   const deleteProduct = (productId: string) => {
-    fetch('http://localhost:8000//api/products/' + String(productId), {
+    fetch('http://95.130.227.121:8001/products/' + String(productId), {
       method: 'DELETE'
     })
       .then(res => res.json())

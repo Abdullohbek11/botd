@@ -15,14 +15,14 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
 
   // API'dan kategoriyalarni olish
   useEffect(() => {
-    fetch('http://95.130.227.121:8001/api/categories')
+    fetch('http://95.130.227.121:8001/categories')
       .then(res => res.json())
       .then(data => setCategories(data));
   }, []);
 
   // Kategoriya qo'shish
   const addCategory = (category: any) => {
-    fetch('http://95.130.227.121:8001/api/categories', {
+    fetch('http://95.130.227.121:8001/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...category, id: String(category.id) })
@@ -33,7 +33,7 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
 
   // Kategoriya o'chirish (backendga so'rov yuboriladi)
   const deleteCategory = (categoryId: string) => {
-    fetch('http://95.130.227.121:8001/api/categories/' + String(categoryId), {
+    fetch('http://95.130.227.121:8001/categories/' + String(categoryId), {
       method: 'DELETE'
     })
       .then(res => res.json())
