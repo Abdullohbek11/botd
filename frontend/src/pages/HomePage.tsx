@@ -19,7 +19,7 @@ export function HomePage() {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category_id === selectedCategory || product.category === selectedCategory;
+    const matchesCategory = !selectedCategory || String(product.category_id) === String(selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
