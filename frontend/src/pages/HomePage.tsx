@@ -114,39 +114,53 @@ export function HomePage() {
       </div>
 
       {/* Products */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {filteredProducts.map((product) => (
             <div key={product.id} className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="relative">
-                <img 
-                  src={product.image} 
-                  alt={product.name} 
-                  className="w-full h-32 object-cover rounded-xl mb-3"
-                />
+                <Link to={`/product/${product.id}`}>
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="w-full h-32 object-cover rounded-xl mb-3"
+                  />
+                </Link>
                 <button
-                  onClick={() => isInFavorites(product.id) ? removeFromFavorites(product.id) : addToFavorites(product.id)}
-                  className={`absolute top-2 right-2 p-1 rounded-full ${
-                    isInFavorites(product.id) 
-                      ? 'bg-red-500 text-white' 
-                      : 'bg-white text-gray-400 hover:text-red-500'
-                  } transition-colors`}
+                  onClick={() => isInFavorites(product.id) 
+                    ? removeFromFavorites(product.id) 
+                    : addToFavorites(product.id)
+                  }
+                  className="absolute top-2 right-2 p-1 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
                 >
-                  <Heart className={`h-4 w-4 ${isInFavorites(product.id) ? 'fill-current' : ''}`} />
+                  <Heart 
+                    className={`h-4 w-4 ${
+                      isInFavorites(product.id) 
+                        ? 'fill-red-500 text-red-500' 
+                        : 'text-gray-400'
+                    }`} 
+                  />
                 </button>
               </div>
               
               <div className="space-y-2">
-                <h3 className="font-semibold text-sm text-gray-900 line-clamp-2">{product.name}</h3>
-                <p className="text-lg font-bold text-[#7000FF]">{formatPrice(product.price)}</p>
+                <Link to={`/product/${product.id}`}>
+                  <h3 className="font-semibold text-sm text-gray-900 line-clamp-2">
+                    {product.name}
+                  </h3>
+                </Link>
                 
-                <button
-                  onClick={() => addItem(product)}
-                  className="w-full bg-[#7000FF] text-white py-2 px-4 rounded-xl text-sm font-semibold hover:bg-[#5A00D6] transition-colors flex items-center justify-center space-x-2"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  <span>Savatga</span>
-                </button>
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-lg text-[#7000FF]">
+                    {formatPrice(product.price)}
+                  </span>
+                  <button
+                    onClick={() => addItem(product)}
+                    className="p-2 rounded-full bg-[#7000FF] text-white hover:bg-[#5A00D1] transition-colors"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
