@@ -17,14 +17,15 @@ export function HomePage() {
   const { addItem } = useCart();
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  const filteredProducts = products.filter((product) => {
+  let filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    // category_id va selectedCategory har doim string bo'lishi uchun
-    const productCategoryId = String(product.category_id);
-    const selectedCat = selectedCategory ? String(selectedCategory) : null;
-    const matchesCategory = !selectedCat || productCategoryId === selectedCat;
-    return matchesSearch && matchesCategory;
+    if (!selectedCategory) return matchesSearch;
+    return matchesSearch && String(product.category_id) === String(selectedCategory);
   });
+  // Agar filter natijasida hech narsa topilmasa, barcha mahsulotlarni ko'rsat
+  if (filteredProducts.length === 0) {
+    filteredProducts = products;
+  }
 
   const scrollCategories = (direction: 'left' | 'right') => {
     const container = document.getElementById('categories-container');
