@@ -24,7 +24,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     };
     setOrders(prev => [newOrder, ...prev]);
     // API ga yuborish
-    fetch('http://95.130.227.121:8001/orders', {
+    fetch('http://95.130.227.121:8001/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newOrder)

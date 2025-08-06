@@ -1,14 +1,16 @@
 import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, FastAPI
 from typing import List, Dict
 import os
 import requests
 from dotenv import load_dotenv
 import datetime
+from aiosqlite import connect
 from apscheduler.schedulers.background import BackgroundScheduler
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
+import tempfile
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -20,7 +22,12 @@ CATEGORIES_FILE = os.path.join(DATA_DIR, "categories.json")
 USERS_FILE = os.path.join(DATA_DIR, "users.json")
 ORDERS_FILE = os.path.join(DATA_DIR, "orders.json")
 
+# FastAPI app yaratish
+app = FastAPI()
 router = APIRouter()
+
+# Router'ni /api prefiksi bilan ulash
+app.include_router(router, prefix="/api")
 
 def read_json(file_path):
     if not os.path.exists(file_path):
@@ -32,96 +39,7 @@ def write_json(file_path, data):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def create_excel_order(order, order_number):
-    """Buyurtma uchun Excel fayl yaratadi"""
-    wb = Workbook()
-    ws = wb.active
-    ws.title = f"Buyurtma #{order_number}"
-    
-    # Stil sozlamalari
-    header_font = Font(bold=True, size=14, color="FFFFFF")
-    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
-    border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-    
-    # Sarlavha
-    ws['A1'] = f"BUYURTMA #{order_number}"
-    ws['A1'].font = Font(bold=True, size=16, color="366092")
-    ws.merge_cells('A1:F1')
-    ws['A1'].alignment = Alignment(horizontal='center')
-    
-    # Mijoz ma'lumotlari
-    customer_info = order.get('customerInfo', {})
-    
-    ws['A3'] = "Mijoz ma'lumotlari:"
-    ws['A3'].font = Font(bold=True, size=12)
-    
-    ws['A4'] = "Ism:"
-    ws['B4'] = customer_info.get('name', '-')
-    ws['A5'] = "Telefon:"
-    ws['B5'] = customer_info.get('phone', '-')
-    ws['A6'] = "Manzil:"
-    ws['B6'] = customer_info.get('address', '-')
-    ws['A7'] = "Lokatsiya:"
-    ws['B7'] = customer_info.get('location', '-')
-    
-    # Mahsulotlar jadvali
-    ws['A9'] = "Mahsulotlar:"
-    ws['A9'].font = Font(bold=True, size=12)
-    
-    # Jadval sarlavhalari
-    headers = ['№', 'Mahsulot nomi', 'Miqdori', 'Narxi', 'Jami', 'Izoh']
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=10, column=col, value=header)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = border
-    
-    # Mahsulotlar
-    total_sum = 0
-    for row, item in enumerate(order.get('items', []), 11):
-        name = item.get('name', '')
-        quantity = int(item.get('quantity', 1))
-        price = int(item.get('price', 0) or item.get('product', {}).get('price', 0))
-        subtotal = quantity * price
-        total_sum += subtotal
-        
-        ws.cell(row=row, column=1, value=row-10).border = border
-        ws.cell(row=row, column=2, value=name).border = border
-        ws.cell(row=row, column=3, value=quantity).border = border
-        ws.cell(row=row, column=4, value=f"{price:,} so'm").border = border
-        ws.cell(row=row, column=5, value=f"{subtotal:,} so'm").border = border
-        ws.cell(row=row, column=6, value="").border = border
-    
-    # Umumiy summa
-    last_row = 11 + len(order.get('items', []))
-    ws.cell(row=last_row+1, column=4, value="JAMI:").font = Font(bold=True)
-    ws.cell(row=last_row+1, column=5, value=f"{total_sum:,} so'm").font = Font(bold=True)
-    
-    # Ustun kengliklarini sozlash
-    ws.column_dimensions['A'].width = 5
-    ws.column_dimensions['B'].width = 30
-    ws.column_dimensions['C'].width = 10
-    ws.column_dimensions['D'].width = 15
-    ws.column_dimensions['E'].width = 15
-    ws.column_dimensions['F'].width = 20
-    
-    # Fayl nomi
-    filename = f"buyurtma_{order_number}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    filepath = os.path.join(DATA_DIR, filename)
-    wb.save(filepath)
-    return filepath
-
 def send_order_to_group(order, order_number):
-    # Excel fayl yaratish
-    excel_filepath = create_excel_order(order, order_number)
-    
-    # Lokatsiya yuborish
     loc = order.get('customerInfo', {}).get('location', '')
     try:
         if loc and ',' in loc:
@@ -136,8 +54,6 @@ def send_order_to_group(order, order_number):
             print("Telegram location javobi:", r.text)
     except Exception as e:
         print("Telegram location xatolik:", e)
-    
-    # Xabar matni
     text = (
         f"🛒 #{order_number}-chi buyurtma!\n"
         f"Ism: {order.get('customerInfo', {}).get('name', '-') }\n"
@@ -152,8 +68,6 @@ def send_order_to_group(order, order_number):
         subtotal = int(price) * int(quantity)
         text += f"- {name} {quantity} dona = {subtotal} so'm\n"
     text += f"\nJami: {order.get('total', 0)} so'm"
-    
-    # Xabar yuborish
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": GROUP_CHAT_ID,
@@ -164,26 +78,6 @@ def send_order_to_group(order, order_number):
         print("Telegram API javobi:", r.text)
     except Exception as e:
         print("Telegram API xatolik:", e)
-    
-    # Excel fayl yuborish
-    try:
-        with open(excel_filepath, 'rb') as file:
-            files = {'document': file}
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
-            payload = {
-                "chat_id": GROUP_CHAT_ID,
-                "caption": f"📊 Buyurtma #{order_number} Excel fayli"
-            }
-            r = requests.post(url, data=payload, files=files, timeout=10)
-            print("Excel fayl yuborildi:", r.text)
-    except Exception as e:
-        print("Excel fayl yuborish xatolik:", e)
-    
-    # Faylni o'chirish
-    try:
-        os.remove(excel_filepath)
-    except:
-        pass
 
 def get_time_period_stats(start_time, end_time, period_name):
     """Berilgan vaqt oralig'idagi statistikalarni hisoblaydi"""
@@ -238,8 +132,9 @@ def send_morning_stats():
         
         product_stats, total_sum, total_orders, customer_orders = get_time_period_stats(today_7, today_10, "Ertalab")
         
-        # Faqat buyurtma bo'lganda xabar yuborish
-        if product_stats:
+        if not product_stats:
+            stats_text = 'Ertalab 7:00-10:00 oralig\'ida buyurtmalar yo\'q.'
+        else:
             stats_text = f'📊 Ertalab 7:00-10:00 oralig\'idagi buyurtmalar:\n\n'
             
             stats_text += 'Mahsulotlar:\n'
@@ -253,14 +148,14 @@ def send_morning_stats():
                 stats_text += '\nMijozlar:\n'
                 for customer_order in customer_orders:
                     stats_text += f'- {customer_order}\n'
-            
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-            payload = {
-                "chat_id": GROUP_CHAT_ID,
-                "text": stats_text
-            }
-            r = requests.post(url, json=payload, timeout=5)
-            print("Ertalab statistikasi yuborildi:", r.text)
+        
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": GROUP_CHAT_ID,
+            "text": stats_text
+        }
+        r = requests.post(url, json=payload, timeout=5)
+        print("Ertalab statistikasi yuborildi:", r.text)
         
     except Exception as e:
         print("Ertalab statistika xatolik:", e)
@@ -274,8 +169,9 @@ def send_mid_morning_stats():
         
         product_stats, total_sum, total_orders, customer_orders = get_time_period_stats(today_10, today_13, "Kun o'rtasi")
         
-        # Faqat buyurtma bo'lganda xabar yuborish
-        if product_stats:
+        if not product_stats:
+            stats_text = 'Kun o\'rtasi 10:00-13:00 oralig\'ida buyurtmalar yo\'q.'
+        else:
             stats_text = f'📊 Kun o\'rtasi 10:00-13:00 oralig\'idagi buyurtmalar:\n\n'
             
             stats_text += 'Mahsulotlar:\n'
@@ -289,14 +185,14 @@ def send_mid_morning_stats():
                 stats_text += '\nMijozlar:\n'
                 for customer_order in customer_orders:
                     stats_text += f'- {customer_order}\n'
-            
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-            payload = {
-                "chat_id": GROUP_CHAT_ID,
-                "text": stats_text
-            }
-            r = requests.post(url, json=payload, timeout=5)
-            print("Kun o'rtasi statistikasi yuborildi:", r.text)
+        
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": GROUP_CHAT_ID,
+            "text": stats_text
+        }
+        r = requests.post(url, json=payload, timeout=5)
+        print("Kun o'rtasi statistikasi yuborildi:", r.text)
         
     except Exception as e:
         print("Kun o'rtasi statistika xatolik:", e)
@@ -310,8 +206,9 @@ def send_afternoon_stats():
         
         product_stats, total_sum, total_orders, customer_orders = get_time_period_stats(today_13, today_16, "Tushdan keyin")
         
-        # Faqat buyurtma bo'lganda xabar yuborish
-        if product_stats:
+        if not product_stats:
+            stats_text = 'Tushdan keyin 13:00-16:00 oralig\'ida buyurtmalar yo\'q.'
+        else:
             stats_text = f'📊 Tushdan keyin 13:00-16:00 oralig\'idagi buyurtmalar:\n\n'
             
             stats_text += 'Mahsulotlar:\n'
@@ -325,14 +222,14 @@ def send_afternoon_stats():
                 stats_text += '\nMijozlar:\n'
                 for customer_order in customer_orders:
                     stats_text += f'- {customer_order}\n'
-            
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-            payload = {
-                "chat_id": GROUP_CHAT_ID,
-                "text": stats_text
-            }
-            r = requests.post(url, json=payload, timeout=5)
-            print("Tushdan keyin statistikasi yuborildi:", r.text)
+        
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": GROUP_CHAT_ID,
+            "text": stats_text
+        }
+        r = requests.post(url, json=payload, timeout=5)
+        print("Tushdan keyin statistikasi yuborildi:", r.text)
         
     except Exception as e:
         print("Tushdan keyin statistika xatolik:", e)
@@ -346,8 +243,9 @@ def send_evening_stats():
         
         product_stats, total_sum, total_orders, customer_orders = get_time_period_stats(today_16, today_19, "Kechqurun")
         
-        # Faqat buyurtma bo'lganda xabar yuborish
-        if product_stats:
+        if not product_stats:
+            stats_text = 'Kechqurun 16:00-19:00 oralig\'ida buyurtmalar yo\'q.'
+        else:
             stats_text = f'📊 Kechqurun 16:00-19:00 oralig\'idagi buyurtmalar:\n\n'
             
             stats_text += 'Mahsulotlar:\n'
@@ -361,14 +259,14 @@ def send_evening_stats():
                 stats_text += '\nMijozlar:\n'
                 for customer_order in customer_orders:
                     stats_text += f'- {customer_order}\n'
-            
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-            payload = {
-                "chat_id": GROUP_CHAT_ID,
-                "text": stats_text
-            }
-            r = requests.post(url, json=payload, timeout=5)
-            print("Kechqurun statistikasi yuborildi:", r.text)
+        
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": GROUP_CHAT_ID,
+            "text": stats_text
+        }
+        r = requests.post(url, json=payload, timeout=5)
+        print("Kechqurun statistikasi yuborildi:", r.text)
         
     except Exception as e:
         print("Kechqurun statistika xatolik:", e)
@@ -382,8 +280,9 @@ def send_night_stats():
         
         product_stats, total_sum, total_orders, customer_orders = get_time_period_stats(today_19, tomorrow_7, "Tungi")
         
-        # Faqat buyurtma bo'lganda xabar yuborish
-        if product_stats:
+        if not product_stats:
+            stats_text = 'Tungi 19:00-7:00 oralig\'ida buyurtmalar yo\'q.'
+        else:
             stats_text = f'📊 Tungi 19:00-7:00 oralig\'idagi buyurtmalar:\n\n'
             
             stats_text += 'Mahsulotlar:\n'
@@ -397,14 +296,14 @@ def send_night_stats():
                 stats_text += '\nMijozlar:\n'
                 for customer_order in customer_orders:
                     stats_text += f'- {customer_order}\n'
-            
-            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-            payload = {
-                "chat_id": GROUP_CHAT_ID,
-                "text": stats_text
-            }
-            r = requests.post(url, json=payload, timeout=5)
-            print("Tungi statistikasi yuborildi:", r.text)
+        
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": GROUP_CHAT_ID,
+            "text": stats_text
+        }
+        r = requests.post(url, json=payload, timeout=5)
+        print("Tungi statistikasi yuborildi:", r.text)
         
     except Exception as e:
         print("Tungi statistika xatolik:", e)
