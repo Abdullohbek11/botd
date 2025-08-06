@@ -27,7 +27,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 soniya timeout
         
-        const response = await fetch('http://localhost:8000/products', {
+        const response = await fetch('http://localhost:8001/products', {
           signal: controller.signal,
           headers: {
             'Cache-Control': 'no-cache',
@@ -70,7 +70,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   // Mahsulot qo'shish
   const addProduct = async (product: any) => {
     try {
-      const response = await fetch('http://localhost:8000/products', {
+      const response = await fetch('http://localhost:8001/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...product, id: String(product.id) })
@@ -91,7 +91,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   // Mahsulot o'chirish
   const deleteProduct = async (productId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/products/${String(productId)}`, {
+      const response = await fetch(`http://localhost:8001/products/${String(productId)}`, {
         method: 'DELETE'
       });
       

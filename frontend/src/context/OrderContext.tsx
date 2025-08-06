@@ -24,7 +24,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     };
     setOrders(prev => [newOrder, ...prev]);
     // API ga yuborish
-    fetch('http://localhost:8000/orders', {
+    fetch('http://localhost:8001/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newOrder)
