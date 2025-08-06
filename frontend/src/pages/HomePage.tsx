@@ -11,7 +11,7 @@ import { formatPrice } from '../utils/formatters';
 export function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { products, loading, error } = useProducts();
+  const { products } = useProducts();
   const { categories } = useCategories();
   const { addToFavorites, removeFromFavorites, isInFavorites } = useFavorites();
   const { addItem } = useCart();
@@ -38,41 +38,6 @@ export function HomePage() {
       setScrollPosition(newPosition);
     }
   };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F4F5F5]">
-        <Header onSearch={setSearchQuery} searchQuery={searchQuery} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7000FF] mx-auto mb-4"></div>
-            <p className="text-gray-600">Mahsulotlar yuklanmoqda...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#F4F5F5]">
-        <Header onSearch={setSearchQuery} searchQuery={searchQuery} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">
-            <p className="text-red-600 mb-4">Xatolik: {error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="bg-[#7000FF] text-white px-4 py-2 rounded-lg"
-            >
-              Qayta urinish
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F4F5F5]">
@@ -127,12 +92,7 @@ export function HomePage() {
                   selectedCategory === category.id ? 'bg-white' : 'bg-gray-200'
                 }`}>
                   {category.image ? (
-                    <img 
-                      src={category.image} 
-                      alt={category.name} 
-                      className="w-16 h-16 object-cover rounded-full"
-                      loading="lazy"
-                    />
+                    <img src={category.image} alt={category.name} className="w-16 h-16 object-cover rounded-full" />
                   ) : (
                     <span className={`text-2xl ${selectedCategory === category.id ? 'text-[#7000FF]' : 'text-gray-700'}`}>{category.icon}</span>
                   )}
@@ -161,12 +121,7 @@ export function HomePage() {
               <Link to={`/product/${product.id}`}>
                 <div className="relative">
                   {product.image ? (
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
-                      className="w-full h-32 object-cover rounded-t-lg"
-                      loading="lazy"
-                    />
+                    <img src={product.image} alt={product.name} className="w-full h-32 object-cover rounded-t-lg" />
                   ) : (
                     <div className="w-full h-32 bg-gray-200 rounded-t-lg flex items-center justify-center">
                       <span className="text-gray-400 text-2xl">📦</span>
@@ -214,7 +169,7 @@ export function HomePage() {
           ))}
         </div>
         
-        {filteredProducts.length === 0 && !loading && (
+        {filteredProducts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-600">Mahsulot topilmadi</p>
           </div>
