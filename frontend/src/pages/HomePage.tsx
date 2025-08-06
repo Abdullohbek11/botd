@@ -17,7 +17,7 @@ export function HomePage() {
   const { addItem } = useCart();
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  let filteredProducts = products.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     if (!selectedCategory) return matchesSearch;
     return matchesSearch && String(product.category_id) === String(selectedCategory);
