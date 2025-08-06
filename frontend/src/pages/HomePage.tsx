@@ -17,22 +17,11 @@ export function HomePage() {
   const { addItem } = useCart();
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  // Debug uchun console.log
-  console.log('Products:', products);
-  console.log('Categories:', categories);
-  console.log('Selected Category:', selectedCategory);
-
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || String(product.category_id) === String(selectedCategory);
-    
-    // Debug uchun console.log
-    console.log('Product:', product.name, 'Category ID:', product.category_id, 'Selected:', selectedCategory, 'Matches:', matchesCategory);
-    
     return matchesSearch && matchesCategory;
   });
-
-  console.log('Filtered Products:', filteredProducts);
 
   const scrollCategories = (direction: 'left' | 'right') => {
     const container = document.getElementById('categories-container');
