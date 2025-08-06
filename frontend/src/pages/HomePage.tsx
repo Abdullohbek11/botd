@@ -19,7 +19,10 @@ export function HomePage() {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category_id === selectedCategory || product.category === selectedCategory;
+    // category_id va selectedCategory har doim string bo'lishi uchun
+    const productCategoryId = String(product.category_id);
+    const selectedCat = selectedCategory ? String(selectedCategory) : null;
+    const matchesCategory = !selectedCat || productCategoryId === selectedCat;
     return matchesSearch && matchesCategory;
   });
 
