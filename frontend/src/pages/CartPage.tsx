@@ -152,8 +152,8 @@ export function CartPage() {
                   <Phone className="h-4 w-4 inline mr-1" />
                   Telefon raqami *
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-500 pointer-events-none">+998 </span>
+                <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-[#7000FF] focus-within:border-transparent">
+                  <span className="text-gray-500 mr-2">+998</span>
                   <input
                     type="text"
                     required
@@ -166,7 +166,7 @@ export function CartPage() {
                       value = value.slice(0, 9);
                       setCustomerInfo(prev => ({ ...prev, phone: '+998' + value }));
                     }}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-20 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
+                    className="flex-1 border-none outline-none bg-transparent"
                     maxLength={9}
                   />
                 </div>
