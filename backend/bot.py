@@ -10,7 +10,14 @@ import asyncio
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 WEBAPP_URL = os.getenv("WEBAPP_URL")
-GROUP_CHAT_ID = int(os.getenv("GROUP_CHAT_ID"))
+GROUP_CHAT_ID_STR = os.getenv("GROUP_CHAT_ID")
+
+# Xavfsiz int ga o'tkazish
+if GROUP_CHAT_ID_STR:
+    GROUP_CHAT_ID = int(GROUP_CHAT_ID_STR)
+else:
+    print("ERROR: GROUP_CHAT_ID not found in .env file")
+    GROUP_CHAT_ID = None
 
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher()
@@ -30,6 +37,10 @@ def order_text(order_data: dict) -> str:
     return text
 
 async def send_order_to_group(order_data: dict):
+    if GROUP_CHAT_ID is None:
+        print("ERROR: GROUP_CHAT_ID is not set")
+        return
+    
     text = order_text(order_data)
     await bot.send_message(GROUP_CHAT_ID, text)
 
