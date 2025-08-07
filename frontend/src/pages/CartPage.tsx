@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Minus, Plus, Trash2, MapPin, Phone, User, Send, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Trash2, MapPin, Phone, User, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useOrders } from '../context/OrderContext';
 import { formatPrice } from '../utils/formatters';
@@ -56,23 +56,6 @@ export function CartPage() {
     } else {
       setIsLocationSharing(false);
       alert('Brauzeringiz geolokatsiyani qo\'llab-quvvatlamaydi.');
-    }
-  };
-  
-  const handleShareContact = () => {
-    // Telegram Web App API for sharing contact
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.requestContact((contact: any) => {
-        if (contact) {
-          setCustomerInfo(prev => ({
-            ...prev,
-            phone: contact.phone_number,
-            name: `${contact.first_name} ${contact.last_name || ''}`.trim()
-          }));
-        }
-      });
-    } else {
-      alert('Telegram muhitida kontakt ulashish mumkin. Hozircha qo\'lda kiriting.');
     }
   };
   
@@ -144,23 +127,13 @@ export function CartPage() {
                   <User className="h-4 w-4 inline mr-1" />
                   Ism familiya
                 </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={customerInfo.name}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
-                    placeholder="Ismingizni kiriting"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleShareContact}
-                    className="px-4 py-2 bg-[#7000FF] text-white rounded-lg hover:bg-[#6000E0] transition-colors flex items-center space-x-1"
-                  >
-                    <Send className="h-4 w-4" />
-                    <span>Kontakt</span>
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  value={customerInfo.name}
+                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
+                  placeholder="Ismingizni kiriting"
+                />
               </div>
               
               <div>
