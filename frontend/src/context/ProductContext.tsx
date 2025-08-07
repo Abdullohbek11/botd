@@ -15,29 +15,59 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   // API'dan mahsulotlarni olish
   useEffect(() => {
-    fetch('http://localhost:8000/products')
-      .then(res => res.json())
-      .then(data => setProducts(data));
+    console.log('Fetching products from API...');
+    fetch('http://95.130.227.121:8000/api/products')
+      .then(res => {
+        console.log('API response status:', res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('Products loaded:', data.length);
+        setProducts(data);
+      })
+      .catch(error => {
+        console.error('Error loading products:', error);
+        setProducts([]);
+      });
   }, []);
 
-  // Mahsulot qo‘shish
+  // Mahsulot qo'shish
   const addProduct = (product: any) => {
-    fetch('http://localhost:8000/products', {
+    fetch('http://95.130.227.121:8000/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...product, id: String(product.id) })
     })
-      .then(res => res.json())
-      .then(newProduct => setProducts(prev => [...prev, newProduct]));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(newProduct => setProducts(prev => [...prev, newProduct]))
+      .catch(error => {
+        console.error('Error adding product:', error);
+      });
   };
 
-  // Mahsulot o‘chirish (backendga so‘rov yuboriladi)
+  // Mahsulot o'chirish (backendga so'rov yuboriladi)
   const deleteProduct = (productId: string) => {
-    fetch('http://localhost:8000/products/' + String(productId), {
+    fetch('http://95.130.227.121:8000/api/products/' + String(productId), {
       method: 'DELETE'
     })
-      .then(res => res.json())
-      .then(() => setProducts(prev => prev.filter(p => String(p.id) !== String(productId))));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(() => setProducts(prev => prev.filter(p => String(p.id) !== String(productId))))
+      .catch(error => {
+        console.error('Error deleting product:', error);
+      });
   };
 
   return (
