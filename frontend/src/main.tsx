@@ -23,12 +23,17 @@ window.fetch = function(input: RequestInfo | URL, init?: RequestInit) {
   }
 
   // Convert input to URL if it's a string
-  const url = typeof input === 'string' ? new URL(input, window.location.origin) : input;
+  let url: URL;
+  if (typeof input === 'string') {
+    url = new URL(input, window.location.origin);
+  } else if (input instanceof URL) {
+    url = new URL(input.href);
+  } else {
+    url = new URL(input.url);
+  }
   
   // Add query parameter to bypass cache
-  if (url instanceof URL) {
-    url.searchParams.set('ngrok_bypass', 'true');
-  }
+  url.searchParams.set('ngrok_bypass', 'true');
 
   // Add headers
   const headers = new Headers(init.headers);
@@ -36,7 +41,11 @@ window.fetch = function(input: RequestInfo | URL, init?: RequestInit) {
   headers.set('User-Agent', 'TelegramWebApp');
   
   init.headers = headers;
-  return originalFetch(url, init);
+  
+  // Convert back to RequestInfo
+  const finalInput = typeof input === 'string' ? url.href : new Request(url.href, input);
+  
+  return originalFetch(finalInput, init);
 };
 
 // Add meta tags
