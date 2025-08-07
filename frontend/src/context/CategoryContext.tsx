@@ -15,9 +15,23 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
 
   // API'dan kategoriyalarni olish
   useEffect(() => {
+    console.log('Fetching categories from API...');
     fetch('http://95.130.227.121:8001/api/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data));
+      .then(res => {
+        console.log('API response status:', res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('Categories loaded successfully:', data.length, 'categories');
+        setCategories(data);
+      })
+      .catch(error => {
+        console.error('Error loading categories:', error);
+        setCategories([]);
+      });
   }, []);
 
   // Kategoriya qo'shish
@@ -27,8 +41,16 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...category, id: String(category.id) })
     })
-      .then(res => res.json())
-      .then(newCategory => setCategories(prev => [...prev, newCategory]));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(newCategory => setCategories(prev => [...prev, newCategory]))
+      .catch(error => {
+        console.error('Error adding category:', error);
+      });
   };
 
   // Kategoriya o'chirish (backendga so'rov yuboriladi)
@@ -36,8 +58,16 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     fetch('http://95.130.227.121:8001/api/categories/' + String(categoryId), {
       method: 'DELETE'
     })
-      .then(res => res.json())
-      .then(() => setCategories(prev => prev.filter(c => String(c.id) !== String(categoryId))));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(() => setCategories(prev => prev.filter(c => String(c.id) !== String(categoryId))))
+      .catch(error => {
+        console.error('Error deleting category:', error);
+      });
   };
 
   return (

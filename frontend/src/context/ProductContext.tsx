@@ -15,9 +15,23 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   // API'dan mahsulotlarni olish
   useEffect(() => {
+    console.log('Fetching products from API...');
     fetch('http://95.130.227.121:8001/api/products')
-      .then(res => res.json())
-      .then(data => setProducts(data));
+      .then(res => {
+        console.log('API response status:', res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('Products loaded successfully:', data.length, 'products');
+        setProducts(data);
+      })
+      .catch(error => {
+        console.error('Error loading products:', error);
+        setProducts([]);
+      });
   }, []);
 
   // Mahsulot qo'shish
@@ -27,8 +41,16 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...product, id: String(product.id) })
     })
-      .then(res => res.json())
-      .then(newProduct => setProducts(prev => [...prev, newProduct]));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(newProduct => setProducts(prev => [...prev, newProduct]))
+      .catch(error => {
+        console.error('Error adding product:', error);
+      });
   };
 
   // Mahsulot o'chirish (backendga so'rov yuboriladi)
@@ -36,8 +58,16 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     fetch('http://95.130.227.121:8001/api/products/' + String(productId), {
       method: 'DELETE'
     })
-      .then(res => res.json())
-      .then(() => setProducts(prev => prev.filter(p => String(p.id) !== String(productId))));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(() => setProducts(prev => prev.filter(p => String(p.id) !== String(productId))))
+      .catch(error => {
+        console.error('Error deleting product:', error);
+      });
   };
 
   return (
