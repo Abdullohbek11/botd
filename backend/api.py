@@ -9,7 +9,14 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-GROUP_CHAT_ID = os.getenv("GROUP_CHAT_ID")
+GROUP_CHAT_ID_STR = os.getenv("GROUP_CHAT_ID")
+
+# Xavfsiz int ga o'tkazish
+if GROUP_CHAT_ID_STR:
+    GROUP_CHAT_ID = int(GROUP_CHAT_ID_STR)
+else:
+    print("ERROR: GROUP_CHAT_ID not found in .env file")
+    GROUP_CHAT_ID = None
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 PRODUCTS_FILE = os.path.join(DATA_DIR, "products.json")
@@ -30,6 +37,10 @@ def write_json(file_path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def send_order_to_group(order, order_number):
+    if GROUP_CHAT_ID is None:
+        print("ERROR: GROUP_CHAT_ID is not set")
+        return
+    
     loc = order.get('customerInfo', {}).get('location', '')
     try:
         if loc and ',' in loc:
@@ -44,6 +55,7 @@ def send_order_to_group(order, order_number):
             print("Telegram location javobi:", r.text)
     except Exception as e:
         print("Telegram location xatolik:", e)
+    
     text = (
         f"🛒 #{order_number}-chi buyurtma!\n"
         f"Ism: {order.get('customerInfo', {}).get('name', '-')}\n"
@@ -58,10 +70,12 @@ def send_order_to_group(order, order_number):
         subtotal = int(price) * int(quantity)
         text += f"- {name} {quantity} dona = {subtotal} so'm\n"
     text += f"\nJami: {order.get('total', 0)} so'm"
+    
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": GROUP_CHAT_ID,
-        "text": text
+        "text": text,
+        "parse_mode": "HTML"
     }
     try:
         r = requests.post(url, json=payload, timeout=5)
