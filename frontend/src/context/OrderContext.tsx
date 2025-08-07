@@ -24,14 +24,17 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     };
     setOrders(prev => [newOrder, ...prev]);
     // API ga yuborish
-    fetch('http://localhost:8000/orders', {
+    fetch('https://otkirbekshop.uz/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newOrder)
     })
       .then(res => res.json())
       .then(data => {
-        // xabar chiqaring yoki local state yangilang
+        console.log('Buyurtma yuborildi:', data);
+      })
+      .catch(error => {
+        console.error('Buyurtma yuborishda xatolik:', error);
       });
   };
   
