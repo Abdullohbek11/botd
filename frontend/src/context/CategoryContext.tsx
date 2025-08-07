@@ -21,7 +21,7 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
     console.log('Is Telegram WebApp:', isTelegramWebApp);
     
-    fetch('https://95.130.227.121:8000/api/categories', {
+    fetch('https://otkirbekshop.uz/api/categories', {
       headers: {
         'ngrok-skip-browser-warning': 'true',
         'User-Agent': 'TelegramWebApp'
@@ -40,35 +40,13 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(error => {
         console.error('Error loading categories:', error);
-        // Fallback uchun HTTP ga urinish
-        return fetch('http://95.130.227.121:8000/api/categories', {
-          headers: {
-            'ngrok-skip-browser-warning': 'true',
-            'User-Agent': 'TelegramWebApp'
-          }
-        });
-      })
-      .then(res => {
-        if (res && res.ok) {
-          return res.json();
-        }
-        throw new Error('Both HTTPS and HTTP failed');
-      })
-      .then(data => {
-        if (data) {
-          console.log('Categories loaded (fallback):', data.length);
-          setCategories(data);
-        }
-      })
-      .catch(error => {
-        console.error('All API attempts failed:', error);
         setCategories([]);
       });
   }, []);
 
   // Kategoriya qo'shish
   const addCategory = (category: any) => {
-    fetch('https://95.130.227.121:8000/api/categories', {
+    fetch('https://otkirbekshop.uz/api/categories', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -91,7 +69,7 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
 
   // Kategoriya o'chirish (backendga so'rov yuboriladi)
   const deleteCategory = (categoryId: string) => {
-    fetch('https://95.130.227.121:8000/api/categories/' + String(categoryId), {
+    fetch('https://otkirbekshop.uz/api/categories/' + String(categoryId), {
       method: 'DELETE',
       headers: {
         'ngrok-skip-browser-warning': 'true',

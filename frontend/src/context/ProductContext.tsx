@@ -21,7 +21,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
     console.log('Is Telegram WebApp:', isTelegramWebApp);
     
-    fetch('https://95.130.227.121:8000/api/products', {
+    fetch('https://otkirbekshop.uz/api/products', {
       headers: {
         'ngrok-skip-browser-warning': 'true',
         'User-Agent': 'TelegramWebApp'
@@ -40,35 +40,13 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(error => {
         console.error('Error loading products:', error);
-        // Fallback uchun HTTP ga urinish
-        return fetch('http://95.130.227.121:8000/api/products', {
-          headers: {
-            'ngrok-skip-browser-warning': 'true',
-            'User-Agent': 'TelegramWebApp'
-          }
-        });
-      })
-      .then(res => {
-        if (res && res.ok) {
-          return res.json();
-        }
-        throw new Error('Both HTTPS and HTTP failed');
-      })
-      .then(data => {
-        if (data) {
-          console.log('Products loaded (fallback):', data.length);
-          setProducts(data);
-        }
-      })
-      .catch(error => {
-        console.error('All API attempts failed:', error);
         setProducts([]);
       });
   }, []);
 
   // Mahsulot qo'shish
   const addProduct = (product: any) => {
-    fetch('https://95.130.227.121:8000/api/products', {
+    fetch('https://otkirbekshop.uz/api/products', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -91,7 +69,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   // Mahsulot o'chirish (backendga so'rov yuboriladi)
   const deleteProduct = (productId: string) => {
-    fetch('https://95.130.227.121:8000/api/products/' + String(productId), {
+    fetch('https://otkirbekshop.uz/api/products/' + String(productId), {
       method: 'DELETE',
       headers: {
         'ngrok-skip-browser-warning': 'true',
