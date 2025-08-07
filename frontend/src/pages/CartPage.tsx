@@ -162,7 +162,16 @@ export function CartPage() {
                     value = value.replace(/[^\d+]/g, '');
                     // +998 bilan boshlanishini ta'minlash
                     if (value && !value.startsWith('+998')) {
-                      value = '+998' + value.replace(/^\+998/, '');
+                      if (value.startsWith('998')) {
+                        value = '+' + value;
+                      } else if (value.startsWith('+')) {
+                        // + bilan boshlansa, keyingi raqamlarni tekshirish
+                        if (value.length > 1 && !value.startsWith('+998')) {
+                          value = '+998' + value.substring(1);
+                        }
+                      } else {
+                        value = '+998' + value;
+                      }
                     }
                     setCustomerInfo(prev => ({ ...prev, phone: value }));
                   }}

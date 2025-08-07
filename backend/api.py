@@ -37,8 +37,16 @@ def write_json(file_path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def send_order_to_group(order, order_number):
+    print(f"DEBUG: send_order_to_group chaqirildi")
+    print(f"DEBUG: GROUP_CHAT_ID = {GROUP_CHAT_ID}")
+    print(f"DEBUG: BOT_TOKEN = {BOT_TOKEN[:10]}...")
+    
     if GROUP_CHAT_ID is None:
         print("ERROR: GROUP_CHAT_ID is not set")
+        return
+    
+    if not BOT_TOKEN:
+        print("ERROR: BOT_TOKEN is not set")
         return
     
     loc = order.get('customerInfo', {}).get('location', '')
@@ -51,6 +59,8 @@ def send_order_to_group(order, order_number):
                 "latitude": lat,
                 "longitude": lon
             }
+            print(f"DEBUG: Location yuborish - URL: {url}")
+            print(f"DEBUG: Location payload: {payload}")
             r = requests.post(url, json=payload, timeout=5)
             print("Telegram location javobi:", r.text)
     except Exception as e:
@@ -78,9 +88,13 @@ def send_order_to_group(order, order_number):
         "text": text,
         "parse_mode": "HTML"
     }
+    print(f"DEBUG: Xabar yuborish - URL: {url}")
+    print(f"DEBUG: Xabar payload: {payload}")
     try:
         r = requests.post(url, json=payload, timeout=5)
         print("Telegram API javobi:", r.text)
+        if r.status_code != 200:
+            print(f"ERROR: Telegram API xatolik - status: {r.status_code}")
     except Exception as e:
         print("Telegram API xatolik:", e)
 
