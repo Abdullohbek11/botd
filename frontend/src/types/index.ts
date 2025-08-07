@@ -5,7 +5,6 @@ export interface Product {
   originalPrice?: number;
   image: string;
   category: string;
-  category_id: string; // API'dan kelayotgan category_id
   description: string;
   rating: number;
   reviews: number;

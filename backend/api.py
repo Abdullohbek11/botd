@@ -1,16 +1,11 @@
 import json
-from fastapi import APIRouter, HTTPException, FastAPI
+from fastapi import APIRouter, HTTPException
 from typing import List, Dict
 import os
 import requests
 from dotenv import load_dotenv
 import datetime
-from aiosqlite import connect
 from apscheduler.schedulers.background import BackgroundScheduler
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
-from openpyxl.utils import get_column_letter
-import tempfile
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -22,12 +17,7 @@ CATEGORIES_FILE = os.path.join(DATA_DIR, "categories.json")
 USERS_FILE = os.path.join(DATA_DIR, "users.json")
 ORDERS_FILE = os.path.join(DATA_DIR, "orders.json")
 
-# FastAPI app yaratish
-app = FastAPI()
 router = APIRouter()
-
-# Router'ni /api prefiksi bilan ulash
-app.include_router(router, prefix="/api")
 
 def read_json(file_path):
     if not os.path.exists(file_path):
@@ -56,7 +46,7 @@ def send_order_to_group(order, order_number):
         print("Telegram location xatolik:", e)
     text = (
         f"🛒 #{order_number}-chi buyurtma!\n"
-        f"Ism: {order.get('customerInfo', {}).get('name', '-') }\n"
+        f"Ism: {order.get('customerInfo', {}).get('name', '-')}\n"
         f"Telefon: {order.get('customerInfo', {}).get('phone', '-') }\n"
         f"Manzil: {order.get('customerInfo', {}).get('address', '-') }\n"
         f"Mahsulotlar:\n"

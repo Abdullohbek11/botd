@@ -7,9 +7,6 @@ from aiogram.utils.markdown import hbold
 from dotenv import load_dotenv
 import asyncio
 
-from fastapi import FastAPI, Request
-import uvicorn
-
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 WEBAPP_URL = os.getenv("WEBAPP_URL")
@@ -17,7 +14,6 @@ GROUP_CHAT_ID = int(os.getenv("GROUP_CHAT_ID"))
 
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher()
-app = FastAPI()
 
 def order_text(order_data: dict) -> str:
     text = (
@@ -30,18 +26,12 @@ def order_text(order_data: dict) -> str:
     )
     for item in order_data.get('items', []):
         text += f"- {item.get('name', '')} x {item.get('quantity', 1)}\n"
-    text += f"\n<b>Jami:</b> {order_data.get('total', 0)} so‘m"
+    text += f"\n<b>Jami:</b> {order_data.get('total', 0)} so'm"
     return text
 
 async def send_order_to_group(order_data: dict):
     text = order_text(order_data)
     await bot.send_message(GROUP_CHAT_ID, text)
-
-@app.post("/notify_group")
-async def notify_group(request: Request):
-    order_data = await request.json()
-    asyncio.create_task(send_order_to_group(order_data))
-    return {"ok": True}
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -78,14 +68,8 @@ async def test_order(message: Message):
     await send_order_to_group(order_data)
     await message.answer("Buyurtma xabari guruhga yuborildi!")
 
-# Aiogram bot va FastAPI serverni birga ishga tushirish
 async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    import threading
-    def run_api():
-        uvicorn.run(app, host="0.0.0.0", port=8081)
-    threading.Thread(target=run_api, daemon=True).start()
-    loop.run_until_complete(main()) 
+    asyncio.run(main()) 

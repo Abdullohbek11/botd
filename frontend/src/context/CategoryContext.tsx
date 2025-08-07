@@ -15,59 +15,29 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
 
   // API'dan kategoriyalarni olish
   useEffect(() => {
-    console.log('Fetching categories from API...');
-    fetch('http://95.130.227.121:8001/api/categories')
-      .then(res => {
-        console.log('API response status:', res.status);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Categories loaded successfully:', data.length, 'categories');
-        setCategories(data);
-      })
-      .catch(error => {
-        console.error('Error loading categories:', error);
-        setCategories([]);
-      });
+    fetch('http://localhost:8000/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data));
   }, []);
 
-  // Kategoriya qo'shish
+  // Kategoriya qo‘shish
   const addCategory = (category: any) => {
-    fetch('http://95.130.227.121:8001/api/categories', {
+    fetch('http://localhost:8000/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...category, id: String(category.id) })
     })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(newCategory => setCategories(prev => [...prev, newCategory]))
-      .catch(error => {
-        console.error('Error adding category:', error);
-      });
+      .then(res => res.json())
+      .then(newCategory => setCategories(prev => [...prev, newCategory]));
   };
 
-  // Kategoriya o'chirish (backendga so'rov yuboriladi)
+  // Kategoriya o‘chirish (backendga so‘rov yuboriladi)
   const deleteCategory = (categoryId: string) => {
-    fetch('http://95.130.227.121:8001/api/categories/' + String(categoryId), {
+    fetch('http://localhost:8000/categories/' + String(categoryId), {
       method: 'DELETE'
     })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(() => setCategories(prev => prev.filter(c => String(c.id) !== String(categoryId))))
-      .catch(error => {
-        console.error('Error deleting category:', error);
-      });
+      .then(res => res.json())
+      .then(() => setCategories(prev => prev.filter(c => String(c.id) !== String(categoryId))));
   };
 
   return (
