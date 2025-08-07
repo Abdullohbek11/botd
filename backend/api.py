@@ -77,6 +77,14 @@ def create_excel_order(order, order_number):
             cell.font = openpyxl.styles.Font(bold=True)
             cell.fill = openpyxl.styles.PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
         
+        # Ustunlar kengligini o'rnatish
+        worksheet.column_dimensions['A'].width = 8   # №
+        worksheet.column_dimensions['B'].width = 30  # MAXSULOT NOMI
+        worksheet.column_dimensions['C'].width = 12  # O'LCHAM
+        worksheet.column_dimensions['D'].width = 10  # SONI
+        worksheet.column_dimensions['E'].width = 15  # NARXI
+        worksheet.column_dimensions['F'].width = 20  # UMUMIY SUMMA
+        
         # Jami qatorini qo'shish
         total_row = len(data) + 2
         worksheet.cell(row=total_row, column=1, value="JAMI")
@@ -89,6 +97,33 @@ def create_excel_order(order, order_number):
             cell = worksheet.cell(row=total_row, column=col)
             cell.font = openpyxl.styles.Font(bold=True)
             cell.fill = openpyxl.styles.PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+        
+        # Ma'lumotlar qismini qo'shish
+        info_row = total_row + 3
+        worksheet.cell(row=info_row, column=1, value="YUBORUVCHI:")
+        worksheet.cell(row=info_row, column=2, value="O'TKIRBEK")
+        worksheet.cell(row=info_row, column=4, value="YUBORUVCHI NOMERI:")
+        worksheet.cell(row=info_row, column=5, value="+998979960020")
+        
+        info_row += 1
+        worksheet.cell(row=info_row, column=1, value="QABUL QILUVCHI:")
+        worksheet.cell(row=info_row, column=2, value=order.get('customerInfo', {}).get('name', '-'))
+        worksheet.cell(row=info_row, column=4, value="Tel raqam:")
+        worksheet.cell(row=info_row, column=5, value=order.get('customerInfo', {}).get('phone', '-'))
+        
+        info_row += 1
+        worksheet.cell(row=info_row, column=1, value="Telegram:")
+        worksheet.cell(row=info_row, column=2, value="@Bronavia0020")
+        worksheet.cell(row=info_row, column=4, value="Jami summa:")
+        worksheet.cell(row=info_row, column=5, value=f"{order.get('total', 0)} so'm")
+        
+        # Ma'lumotlar qismini formatlash
+        for row in range(total_row + 3, info_row + 1):
+            for col in range(1, 6):
+                cell = worksheet.cell(row=row, column=col)
+                if col in [1, 4]:  # Label ustunlari
+                    cell.font = openpyxl.styles.Font(bold=True)
+                    cell.fill = openpyxl.styles.PatternFill(start_color="E6E6E6", end_color="E6E6E6", fill_type="solid")
     
     output.seek(0)
     return output
@@ -166,12 +201,7 @@ def send_order_to_group(order, order_number):
         files = {'document': ('buyurtma.xlsx', excel_file, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
         data = {
             'chat_id': GROUP_CHAT_ID,
-            'caption': f'📋 #{order_number}-chi buyurtma Excel fayli\n\n'
-                      f'YUBORUVCHI: O\'TKIRBEK\n'
-                      f'QABUL QILUVCHI: {order.get("customerInfo", {}).get("name", "-")}\n'
-                      f'Tel raqam: {order.get("customerInfo", {}).get("phone", "-")}\n'
-                      f'Telegram: @Bronavia0020\n'
-                      f'Jami summa: {order.get("total", 0)} so\'m'
+            'caption': f'📋 #{order_number}-chi buyurtma Excel fayli'
         }
         
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
