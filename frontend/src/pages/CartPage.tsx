@@ -69,7 +69,7 @@ export function CartPage() {
     }
     
     // Telefon raqami validatsiyasi
-    if (!customerInfo.phone.match(/^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/)) {
+    if (!customerInfo.phone.match(/^\+998\d{9}$/)) {
       alert('Iltimos, to\'g\'ri telefon raqami kiriting (+998 90 123 45 67)');
       return;
     }
@@ -160,26 +160,28 @@ export function CartPage() {
                     let value = e.target.value;
                     // Faqat raqam va + belgisini qabul qilish
                     value = value.replace(/[^\d+]/g, '');
+                    
                     // +998 bilan boshlanishini ta'minlash
-                    if (value && !value.startsWith('+998')) {
+                    if (value) {
                       if (value.startsWith('998')) {
                         value = '+' + value;
+                      } else if (value.startsWith('+998')) {
+                        // To'g'ri format
                       } else if (value.startsWith('+')) {
-                        // + bilan boshlansa, keyingi raqamlarni tekshirish
-                        if (value.length > 1 && !value.startsWith('+998')) {
-                          value = '+998' + value.substring(1);
-                        }
+                        // + bilan boshlansa, lekin +998 emas
+                        value = '+998' + value.substring(1);
                       } else {
+                        // Raqam bilan boshlansa
                         value = '+998' + value;
                       }
                     }
+                    
                     setCustomerInfo(prev => ({ ...prev, phone: value }));
                   }}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
                   placeholder="+998 90 123 45 67"
-                  pattern="^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$"
                 />
-                {customerInfo.phone && !customerInfo.phone.match(/^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/) && (
+                {customerInfo.phone && !customerInfo.phone.match(/^\+998\d{9}$/) && (
                   <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (+998 90 123 45 67)</p>
                 )}
               </div>
