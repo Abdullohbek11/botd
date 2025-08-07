@@ -68,9 +68,9 @@ export function CartPage() {
       return;
     }
     
-    // Telefon raqami validatsiyasi
-    if (!customerInfo.phone.match(/^\+998\d{9}$/)) {
-      alert('Iltimos, to\'g\'ri telefon raqami kiriting (+998 90 123 45 67)');
+    // Telefon raqami validatsiyasi (7 ta raqam +998 bilan)
+    if (!customerInfo.phone.match(/^\+998\d{7}$/)) {
+      alert('Iltimos, to\'g\'ri telefon raqami kiriting (90 123 45)');
       return;
     }
     
@@ -152,37 +152,27 @@ export function CartPage() {
                   <Phone className="h-4 w-4 inline mr-1" />
                   Telefon raqami *
                 </label>
-                <input
-                  type="tel"
-                  required
-                  value={customerInfo.phone}
-                  onChange={(e) => {
-                    let value = e.target.value;
-                    // Faqat raqam va + belgisini qabul qilish
-                    value = value.replace(/[^\d+]/g, '');
-                    
-                    // +998 bilan boshlanishini ta'minlash
-                    if (value) {
-                      if (value.startsWith('998')) {
-                        value = '+' + value;
-                      } else if (value.startsWith('+998')) {
-                        // To'g'ri format
-                      } else if (value.startsWith('+')) {
-                        // + bilan boshlansa, lekin +998 emas
-                        value = '+998' + value.substring(1);
-                      } else {
-                        // Raqam bilan boshlansa
-                        value = '+998' + value;
-                      }
-                    }
-                    
-                    setCustomerInfo(prev => ({ ...prev, phone: value }));
-                  }}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
-                  placeholder="+998 90 123 45 67"
-                />
-                {customerInfo.phone && !customerInfo.phone.match(/^\+998\d{9}$/) && (
-                  <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (+998 90 123 45 67)</p>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-gray-500">+998</span>
+                  <input
+                    type="tel"
+                    required
+                    value={customerInfo.phone.replace('+998', '')}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      // Faqat raqamlarni qabul qilish
+                      value = value.replace(/[^\d]/g, '');
+                      // Maksimal 7 ta raqam
+                      value = value.slice(0, 7);
+                      setCustomerInfo(prev => ({ ...prev, phone: '+998' + value }));
+                    }}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-12 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
+                    placeholder="90 123 45"
+                    maxLength={7}
+                  />
+                </div>
+                {customerInfo.phone && customerInfo.phone.length < 12 && (
+                  <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (90 123 45)</p>
                 )}
               </div>
               
@@ -246,14 +236,14 @@ export function CartPage() {
               <div className="mt-6">
                 <button
                   type="submit"
-                  disabled={!customerInfo.phone || !customerInfo.location}
+                  disabled={!customerInfo.phone || !customerInfo.location || customerInfo.phone.length < 12}
                   className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                    customerInfo.phone && customerInfo.location
+                    customerInfo.phone && customerInfo.location && customerInfo.phone.length >= 12
                       ? 'bg-[#7000FF] text-white hover:bg-[#6000E0]'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {!customerInfo.phone || !customerInfo.location
+                  {!customerInfo.phone || !customerInfo.location || customerInfo.phone.length < 12
                     ? 'Telefon va lokatsiyani to\'ldiring'
                     : 'Buyurtma berish'
                   }
