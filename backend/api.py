@@ -58,10 +58,11 @@ def send_order_to_group(order, order_number):
     
     text = (
         f"🛒 #{order_number}-chi buyurtma!\n"
-        f"Ism: {order.get('customerInfo', {}).get('name', '-')}\n"
-        f"Telefon: {order.get('customerInfo', {}).get('phone', '-') }\n"
-        f"Manzil: {order.get('customerInfo', {}).get('address', '-') }\n"
-        f"Mahsulotlar:\n"
+        f"<b>Ism:</b> {order.get('customerInfo', {}).get('name', '-')}\n"
+        f"<b>Telefon:</b> {order.get('customerInfo', {}).get('phone', '-') }\n"
+        f"<b>Manzil:</b> {order.get('customerInfo', {}).get('address', '-') }\n"
+        f"<b>Joylashuv:</b> {order.get('customerInfo', {}).get('location', '-')}\n"
+        f"<b>Mahsulotlar:</b>\n"
     )
     for item in order.get('items', []):
         name = item.get('name', '')
