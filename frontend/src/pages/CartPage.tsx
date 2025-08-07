@@ -155,7 +155,7 @@ export function CartPage() {
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-gray-500 pointer-events-none">+998</span>
                   <input
-                    type="tel"
+                    type="text"
                     required
                     value={customerInfo.phone.replace('+998', '')}
                     onChange={(e) => {
@@ -171,7 +171,7 @@ export function CartPage() {
                   />
                 </div>
                 {customerInfo.phone && customerInfo.phone.length < 12 && (
-                  <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (90 123 45)</p>
+                  <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (7 ta raqam)</p>
                 )}
               </div>
               
