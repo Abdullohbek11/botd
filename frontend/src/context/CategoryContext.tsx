@@ -21,71 +21,87 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
     console.log('Is Telegram WebApp:', isTelegramWebApp);
     
-    fetch('https://otkirbekshop.uz/api/categories', {
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-        'User-Agent': 'TelegramWebApp'
-      }
-    })
-      .then(res => {
-        console.log('API response status:', res.status);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+    const fetchCategories = async () => {
+      try {
+        // API URL ni aniqlash
+        const apiUrl = isTelegramWebApp 
+          ? 'https://otkirbekshop.uz/api/categories'
+          : 'https://otkirbekshop.uz/api/categories';
+        
+        console.log('Fetching categories from:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true',
+            'User-Agent': 'TelegramWebApp'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return res.json();
-      })
-      .then(data => {
+        
+        const data = await response.json();
         console.log('Categories loaded:', data.length);
         setCategories(data);
-      })
-      .catch(error => {
-        console.error('Error loading categories:', error);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Fallback to mock data if API fails
         setCategories([]);
-      });
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   // Kategoriya qo'shish
-  const addCategory = (category: any) => {
-    fetch('https://otkirbekshop.uz/api/categories', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-        'User-Agent': 'TelegramWebApp'
-      },
-      body: JSON.stringify({ ...category, id: String(category.id) })
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(newCategory => setCategories(prev => [...prev, newCategory]))
-      .catch(error => {
-        console.error('Error adding category:', error);
+  const addCategory = async (category: Category) => {
+    try {
+      const response = await fetch('https://otkirbekshop.uz/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+          'User-Agent': 'TelegramWebApp'
+        },
+        body: JSON.stringify(category)
       });
+
+      if (response.ok) {
+        const newCategory = await response.json();
+        setCategories(prev => [...prev, newCategory]);
+        console.log('Category added successfully');
+      } else {
+        console.error('Failed to add category');
+      }
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
   };
 
-  // Kategoriya o'chirish (backendga so'rov yuboriladi)
-  const deleteCategory = (categoryId: string) => {
-    fetch('https://otkirbekshop.uz/api/categories/' + String(categoryId), {
-      method: 'DELETE',
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-        'User-Agent': 'TelegramWebApp'
-      }
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+  // Kategoriya o'chirish
+  const deleteCategory = async (categoryId: string) => {
+    try {
+      const response = await fetch(`https://otkirbekshop.uz/api/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+          'User-Agent': 'TelegramWebApp'
         }
-        return res.json();
-      })
-      .then(() => setCategories(prev => prev.filter(c => String(c.id) !== String(categoryId))))
-      .catch(error => {
-        console.error('Error deleting category:', error);
       });
+
+      if (response.ok) {
+        setCategories(prev => prev.filter(c => c.id !== categoryId));
+        console.log('Category deleted successfully');
+      } else {
+        console.error('Failed to delete category');
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+    }
   };
 
   return (

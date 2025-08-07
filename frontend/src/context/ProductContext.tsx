@@ -21,71 +21,87 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
     console.log('Is Telegram WebApp:', isTelegramWebApp);
     
-    fetch('https://otkirbekshop.uz/api/products', {
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-        'User-Agent': 'TelegramWebApp'
-      }
-    })
-      .then(res => {
-        console.log('API response status:', res.status);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+    const fetchProducts = async () => {
+      try {
+        // API URL ni aniqlash
+        const apiUrl = isTelegramWebApp 
+          ? 'https://otkirbekshop.uz/api/products'
+          : 'https://otkirbekshop.uz/api/products';
+        
+        console.log('Fetching from:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true',
+            'User-Agent': 'TelegramWebApp'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return res.json();
-      })
-      .then(data => {
+        
+        const data = await response.json();
         console.log('Products loaded:', data.length);
         setProducts(data);
-      })
-      .catch(error => {
-        console.error('Error loading products:', error);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        // Fallback to mock data if API fails
         setProducts([]);
-      });
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   // Mahsulot qo'shish
-  const addProduct = (product: any) => {
-    fetch('https://otkirbekshop.uz/api/products', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-        'User-Agent': 'TelegramWebApp'
-      },
-      body: JSON.stringify({ ...product, id: String(product.id) })
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(newProduct => setProducts(prev => [...prev, newProduct]))
-      .catch(error => {
-        console.error('Error adding product:', error);
+  const addProduct = async (product: Product) => {
+    try {
+      const response = await fetch('https://otkirbekshop.uz/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+          'User-Agent': 'TelegramWebApp'
+        },
+        body: JSON.stringify(product)
       });
+
+      if (response.ok) {
+        const newProduct = await response.json();
+        setProducts(prev => [...prev, newProduct]);
+        console.log('Product added successfully');
+      } else {
+        console.error('Failed to add product');
+      }
+    } catch (error) {
+      console.error('Error adding product:', error);
+    }
   };
 
-  // Mahsulot o'chirish (backendga so'rov yuboriladi)
-  const deleteProduct = (productId: string) => {
-    fetch('https://otkirbekshop.uz/api/products/' + String(productId), {
-      method: 'DELETE',
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-        'User-Agent': 'TelegramWebApp'
-      }
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+  // Mahsulot o'chirish
+  const deleteProduct = async (productId: string) => {
+    try {
+      const response = await fetch(`https://otkirbekshop.uz/api/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+          'User-Agent': 'TelegramWebApp'
         }
-        return res.json();
-      })
-      .then(() => setProducts(prev => prev.filter(p => String(p.id) !== String(productId))))
-      .catch(error => {
-        console.error('Error deleting product:', error);
       });
+
+      if (response.ok) {
+        setProducts(prev => prev.filter(p => p.id !== productId));
+        console.log('Product deleted successfully');
+      } else {
+        console.error('Failed to delete product');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    }
   };
 
   return (
