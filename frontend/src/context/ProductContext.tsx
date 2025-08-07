@@ -24,10 +24,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     const fetchProducts = async () => {
       try {
         // API URL ni aniqlash
-        const apiUrl = isTelegramWebApp 
-          ? 'https://otkirbekshop.uz/api/products'
-          : 'https://otkirbekshop.uz/api/products';
-        
+        const apiUrl = 'https://otkirbekshop.uz/api/products';
         console.log('Fetching from:', apiUrl);
         
         const response = await fetch(apiUrl, {
@@ -35,7 +32,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': 'true',
-            'User-Agent': 'TelegramWebApp'
+            'User-Agent': 'TelegramWebApp/1.0'
           }
         });
         
@@ -59,16 +56,17 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   // Mahsulot qo'shish
   const addProduct = async (product: Product) => {
     try {
-      const response = await fetch('https://otkirbekshop.uz/api/products', {
+      const apiUrl = 'https://otkirbekshop.uz/api/products';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
-          'User-Agent': 'TelegramWebApp'
+          'User-Agent': 'TelegramWebApp/1.0'
         },
         body: JSON.stringify(product)
       });
-
+      
       if (response.ok) {
         const newProduct = await response.json();
         setProducts(prev => [...prev, newProduct]);
@@ -84,15 +82,16 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   // Mahsulot o'chirish
   const deleteProduct = async (productId: string) => {
     try {
-      const response = await fetch(`https://otkirbekshop.uz/api/products/${productId}`, {
+      const apiUrl = `https://otkirbekshop.uz/api/products/${productId}`;
+      const response = await fetch(apiUrl, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
-          'User-Agent': 'TelegramWebApp'
+          'User-Agent': 'TelegramWebApp/1.0'
         }
       });
-
+      
       if (response.ok) {
         setProducts(prev => prev.filter(p => p.id !== productId));
         console.log('Product deleted successfully');

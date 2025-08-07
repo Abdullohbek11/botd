@@ -24,18 +24,15 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     const fetchCategories = async () => {
       try {
         // API URL ni aniqlash
-        const apiUrl = isTelegramWebApp 
-          ? 'https://otkirbekshop.uz/api/categories'
-          : 'https://otkirbekshop.uz/api/categories';
-        
-        console.log('Fetching categories from:', apiUrl);
+        const apiUrl = 'https://otkirbekshop.uz/api/categories';
+        console.log('Fetching from:', apiUrl);
         
         const response = await fetch(apiUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': 'true',
-            'User-Agent': 'TelegramWebApp'
+            'User-Agent': 'TelegramWebApp/1.0'
           }
         });
         
@@ -59,16 +56,17 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
   // Kategoriya qo'shish
   const addCategory = async (category: Category) => {
     try {
-      const response = await fetch('https://otkirbekshop.uz/api/categories', {
+      const apiUrl = 'https://otkirbekshop.uz/api/categories';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
-          'User-Agent': 'TelegramWebApp'
+          'User-Agent': 'TelegramWebApp/1.0'
         },
         body: JSON.stringify(category)
       });
-
+      
       if (response.ok) {
         const newCategory = await response.json();
         setCategories(prev => [...prev, newCategory]);
@@ -84,15 +82,16 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
   // Kategoriya o'chirish
   const deleteCategory = async (categoryId: string) => {
     try {
-      const response = await fetch(`https://otkirbekshop.uz/api/categories/${categoryId}`, {
+      const apiUrl = `https://otkirbekshop.uz/api/categories/${categoryId}`;
+      const response = await fetch(apiUrl, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
-          'User-Agent': 'TelegramWebApp'
+          'User-Agent': 'TelegramWebApp/1.0'
         }
       });
-
+      
       if (response.ok) {
         setCategories(prev => prev.filter(c => c.id !== categoryId));
         console.log('Category deleted successfully');
