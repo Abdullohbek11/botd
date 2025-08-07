@@ -21,43 +21,40 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
     console.log('Is Telegram WebApp:', isTelegramWebApp);
     
-    const fetchCategories = async () => {
-      try {
-        // API URL ni aniqlash
-        const apiUrl = 'https://otkirbekshop.uz/api/categories';
-        console.log('Fetching from:', apiUrl);
-        
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true',
-            'User-Agent': 'TelegramWebApp/1.0'
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Categories loaded:', data.length);
-        setCategories(data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        // Fallback to mock data if API fails
-        setCategories([]);
+    // API URL ni aniqlash
+    const apiUrl = 'https://otkirbekshop.uz/api/categories';
+    console.log('API URL:', apiUrl);
+    
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'User-Agent': 'TelegramWebApp/1.0'
       }
-    };
-
-    fetchCategories();
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Categories loaded:', data.length);
+      setCategories(data);
+    })
+    .catch(error => {
+      console.error('Error fetching categories:', error);
+      // Fallback to mock data if API fails
+      setCategories([]);
+    });
   }, []);
 
   // Kategoriya qo'shish
   const addCategory = async (category: Category) => {
     try {
-      const apiUrl = 'https://otkirbekshop.uz/api/categories';
-      const response = await fetch(apiUrl, {
+      const response = await fetch('https://otkirbekshop.uz/api/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,8 +79,7 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
   // Kategoriya o'chirish
   const deleteCategory = async (categoryId: string) => {
     try {
-      const apiUrl = `https://otkirbekshop.uz/api/categories/${categoryId}`;
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`https://otkirbekshop.uz/api/categories/${categoryId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

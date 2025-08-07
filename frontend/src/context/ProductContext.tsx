@@ -21,43 +21,40 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
     console.log('Is Telegram WebApp:', isTelegramWebApp);
     
-    const fetchProducts = async () => {
-      try {
-        // API URL ni aniqlash
-        const apiUrl = 'https://otkirbekshop.uz/api/products';
-        console.log('Fetching from:', apiUrl);
-        
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true',
-            'User-Agent': 'TelegramWebApp/1.0'
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Products loaded:', data.length);
-        setProducts(data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        // Fallback to mock data if API fails
-        setProducts([]);
+    // API URL ni aniqlash
+    const apiUrl = 'https://otkirbekshop.uz/api/products';
+    console.log('API URL:', apiUrl);
+    
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'User-Agent': 'TelegramWebApp/1.0'
       }
-    };
-
-    fetchProducts();
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Products loaded:', data.length);
+      setProducts(data);
+    })
+    .catch(error => {
+      console.error('Error fetching products:', error);
+      // Fallback to mock data if API fails
+      setProducts([]);
+    });
   }, []);
 
   // Mahsulot qo'shish
   const addProduct = async (product: Product) => {
     try {
-      const apiUrl = 'https://otkirbekshop.uz/api/products';
-      const response = await fetch(apiUrl, {
+      const response = await fetch('https://otkirbekshop.uz/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,8 +79,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   // Mahsulot o'chirish
   const deleteProduct = async (productId: string) => {
     try {
-      const apiUrl = `https://otkirbekshop.uz/api/products/${productId}`;
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`https://otkirbekshop.uz/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
