@@ -6,6 +6,10 @@ import requests
 from dotenv import load_dotenv
 import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
+import pandas as pd
+from io import BytesIO
+import base64
+import openpyxl
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -36,6 +40,59 @@ def write_json(file_path, data):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def create_excel_order(order, order_number):
+    """Excel fayl yaratish"""
+    # Excel uchun ma'lumotlarni tayyorlash
+    data = []
+    for i, item in enumerate(order.get('items', []), 1):
+        name = item.get('name', '')
+        quantity = item.get('quantity', 1)
+        price = item.get('price') or item.get('product', {}).get('price') or 0
+        total = int(price) * int(quantity)
+        
+        data.append({
+            '№': i,
+            'MAXSULOT NOMI': name,
+            'O\'LCHAM': 'DONA',
+            'SONI': quantity,
+            'NARXI': price,
+            'UMUMIY SUMMA': total
+        })
+    
+    # DataFrame yaratish
+    df = pd.DataFrame(data)
+    
+    # Excel fayl yaratish
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Buyurtma', index=False)
+        
+        # Excel faylni formatlash
+        workbook = writer.book
+        worksheet = writer.sheets['Buyurtma']
+        
+        # Sarlavhalarni formatlash
+        for col in range(1, 7):
+            cell = worksheet.cell(row=1, column=col)
+            cell.font = openpyxl.styles.Font(bold=True)
+            cell.fill = openpyxl.styles.PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        # Jami qatorini qo'shish
+        total_row = len(data) + 2
+        worksheet.cell(row=total_row, column=1, value="JAMI")
+        worksheet.cell(row=total_row, column=4, value=sum(item['SONI'] for item in data))
+        worksheet.cell(row=total_row, column=5, value=sum(item['NARXI'] for item in data))
+        worksheet.cell(row=total_row, column=6, value=sum(item['UMUMIY SUMMA'] for item in data))
+        
+        # Jami qatorini formatlash
+        for col in range(1, 7):
+            cell = worksheet.cell(row=total_row, column=col)
+            cell.font = openpyxl.styles.Font(bold=True)
+            cell.fill = openpyxl.styles.PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+    
+    output.seek(0)
+    return output
+
 def send_order_to_group(order, order_number):
     print(f"DEBUG: send_order_to_group chaqirildi")
     print(f"DEBUG: GROUP_CHAT_ID = {GROUP_CHAT_ID}")
@@ -49,6 +106,7 @@ def send_order_to_group(order, order_number):
         print("ERROR: BOT_TOKEN is not set")
         return
     
+    # Lokatsiya yuborish
     loc = order.get('customerInfo', {}).get('location', '')
     try:
         if loc and ',' in loc:
@@ -66,6 +124,7 @@ def send_order_to_group(order, order_number):
     except Exception as e:
         print("Telegram location xatolik:", e)
     
+    # Xabar yuborish
     text = (
         f"🛒 #{order_number}-chi buyurtma!\n"
         f"<b>Ism:</b> {order.get('customerInfo', {}).get('name', '-')}\n"
@@ -97,6 +156,30 @@ def send_order_to_group(order, order_number):
             print(f"ERROR: Telegram API xatolik - status: {r.status_code}")
     except Exception as e:
         print("Telegram API xatolik:", e)
+    
+    # Excel fayl yaratish va yuborish
+    try:
+        excel_file = create_excel_order(order, order_number)
+        excel_file.seek(0)
+        
+        # Excel faylni yuborish
+        files = {'document': ('buyurtma.xlsx', excel_file, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+        data = {
+            'chat_id': GROUP_CHAT_ID,
+            'caption': f'📋 #{order_number}-chi buyurtma Excel fayli\n\n'
+                      f'YUBORUVCHI: O\'TKIRBEK\n'
+                      f'QABUL QILUVCHI: {order.get("customerInfo", {}).get("name", "-")}\n'
+                      f'Tel raqam: {order.get("customerInfo", {}).get("phone", "-")}\n'
+                      f'Telegram: @Bronavia0020\n'
+                      f'Jami summa: {order.get("total", 0)} so\'m'
+        }
+        
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
+        r = requests.post(url, data=data, files=files, timeout=10)
+        print("Excel fayl yuborildi:", r.text)
+        
+    except Exception as e:
+        print("Excel fayl yuborishda xatolik:", e)
 
 def get_time_period_stats(start_time, end_time, period_name):
     """Berilgan vaqt oralig'idagi statistikalarni hisoblaydi"""
