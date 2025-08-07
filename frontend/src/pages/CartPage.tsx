@@ -61,7 +61,18 @@ export function CartPage() {
   
   const handleOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerInfo.phone || !customerInfo.location) return;
+    
+    // Validatsiya
+    if (!customerInfo.phone || !customerInfo.location) {
+      alert('Iltimos, telefon raqami va lokatsiyani to\'ldiring');
+      return;
+    }
+    
+    // Telefon raqami validatsiyasi
+    if (!customerInfo.phone.match(/^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/)) {
+      alert('Iltimos, to\'g\'ri telefon raqami kiriting (+998 90 123 45 67)');
+      return;
+    }
     
     createOrder(items, customerInfo);
     clearCart();
@@ -139,22 +150,35 @@ export function CartPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Phone className="h-4 w-4 inline mr-1" />
-                  Telefon raqami
+                  Telefon raqami *
                 </label>
                 <input
                   type="tel"
                   required
                   value={customerInfo.phone}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    // Faqat raqam va + belgisini qabul qilish
+                    value = value.replace(/[^\d+]/g, '');
+                    // +998 bilan boshlanishini ta'minlash
+                    if (value && !value.startsWith('+998')) {
+                      value = '+998' + value.replace(/^\+998/, '');
+                    }
+                    setCustomerInfo(prev => ({ ...prev, phone: value }));
+                  }}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
                   placeholder="+998 90 123 45 67"
+                  pattern="^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$"
                 />
+                {customerInfo.phone && !customerInfo.phone.match(/^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/) && (
+                  <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (+998 90 123 45 67)</p>
+                )}
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin className="h-4 w-4 inline mr-1" />
-                  Joylashuv
+                  Joylashuv *
                 </label>
                 <div className="flex space-x-2">
                   <input
@@ -163,7 +187,7 @@ export function CartPage() {
                     value={customerInfo.location}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, location: e.target.value }))}
                     className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
-                    placeholder="Shahar, tuman yoki koordinatalar"
+                    placeholder="Shahar, tuman yoki lokatsiya tugmasini bosing"
                   />
                   <button
                     type="button"
@@ -175,6 +199,9 @@ export function CartPage() {
                     <span>{isLocationSharing ? 'Yuklanmoqda...' : 'Lokatsiya'}</span>
                   </button>
                 </div>
+                {!customerInfo.location && (
+                  <p className="text-red-500 text-sm mt-1">Lokatsiyani kiriting yoki lokatsiya tugmasini bosing</p>
+                )}
               </div>
               
               <div>
@@ -208,9 +235,17 @@ export function CartPage() {
               <div className="mt-6">
                 <button
                   type="submit"
-                  className="w-full bg-[#7000FF] text-white py-3 px-4 rounded-lg hover:bg-[#6000E0] font-medium"
+                  disabled={!customerInfo.phone || !customerInfo.location}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                    customerInfo.phone && customerInfo.location
+                      ? 'bg-[#7000FF] text-white hover:bg-[#6000E0]'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
-                  Buyurtma berish
+                  {!customerInfo.phone || !customerInfo.location
+                    ? 'Telefon va lokatsiyani to\'ldiring'
+                    : 'Buyurtma berish'
+                  }
                 </button>
               </div>
             </form>
