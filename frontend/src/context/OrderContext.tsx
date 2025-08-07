@@ -14,6 +14,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   
   const createOrder = (items: CartItem[], customerInfo: { phone: string; location: string; address?: string; name?: string }) => {
+    console.log('createOrder chaqirildi:', { items, customerInfo });
+    
     const newOrder: Order = {
       id: Date.now().toString(),
       items,
@@ -22,14 +24,21 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       createdAt: new Date(),
       customerInfo
     };
+    
+    console.log('Yaratilgan buyurtma:', newOrder);
     setOrders(prev => [newOrder, ...prev]);
+    
     // API ga yuborish
+    console.log('API ga yuborish boshlanmoqda...');
     fetch('https://otkirbekshop.uz/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newOrder)
     })
-      .then(res => res.json())
+      .then(res => {
+        console.log('API javobi status:', res.status);
+        return res.json();
+      })
       .then(data => {
         console.log('Buyurtma yuborildi:', data);
       })

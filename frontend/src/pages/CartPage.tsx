@@ -61,6 +61,9 @@ export function CartPage() {
   
   const handleOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('handleOrderSubmit chaqirildi');
+    console.log('customerInfo:', customerInfo);
+    console.log('items:', items);
     
     // Validatsiya
     if (!customerInfo.phone || !customerInfo.location) {
@@ -74,6 +77,7 @@ export function CartPage() {
       return;
     }
     
+    console.log('createOrder chaqirilmoqda...');
     createOrder(items, customerInfo);
     clearCart();
     setShowCheckout(false);
