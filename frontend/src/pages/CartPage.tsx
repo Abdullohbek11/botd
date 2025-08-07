@@ -167,7 +167,6 @@ export function CartPage() {
                       setCustomerInfo(prev => ({ ...prev, phone: '+998' + value }));
                     }}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-12 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
-                    placeholder="90 123 45"
                     maxLength={7}
                   />
                 </div>
