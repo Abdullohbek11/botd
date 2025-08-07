@@ -68,9 +68,9 @@ export function CartPage() {
       return;
     }
     
-    // Telefon raqami validatsiyasi (7 ta raqam +998 bilan)
-    if (!customerInfo.phone.match(/^\+998\d{7}$/)) {
-      alert('Iltimos, to\'g\'ri telefon raqami kiriting (90 123 45)');
+    // Telefon raqami validatsiyasi (9 ta raqam +998 bilan)
+    if (!customerInfo.phone.match(/^\+998\d{9}$/)) {
+      alert('Iltimos, to\'g\'ri telefon raqami kiriting (9 ta raqam)');
       return;
     }
     
@@ -162,16 +162,16 @@ export function CartPage() {
                       let value = e.target.value;
                       // Faqat raqamlarni qabul qilish
                       value = value.replace(/[^\d]/g, '');
-                      // Maksimal 7 ta raqam
-                      value = value.slice(0, 7);
+                      // Maksimal 9 ta raqam
+                      value = value.slice(0, 9);
                       setCustomerInfo(prev => ({ ...prev, phone: '+998' + value }));
                     }}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-12 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
-                    maxLength={7}
+                    maxLength={9}
                   />
                 </div>
-                {customerInfo.phone && customerInfo.phone.length < 12 && (
-                  <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (7 ta raqam)</p>
+                {customerInfo.phone && customerInfo.phone.length < 13 && (
+                  <p className="text-red-500 text-sm mt-1">To'g'ri telefon raqami kiriting (9 ta raqam)</p>
                 )}
               </div>
               
@@ -235,14 +235,14 @@ export function CartPage() {
               <div className="mt-6">
                 <button
                   type="submit"
-                  disabled={!customerInfo.phone || !customerInfo.location || customerInfo.phone.length < 12}
+                  disabled={!customerInfo.phone || !customerInfo.location || customerInfo.phone.length < 13}
                   className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                    customerInfo.phone && customerInfo.location && customerInfo.phone.length >= 12
+                    customerInfo.phone && customerInfo.location && customerInfo.phone.length >= 13
                       ? 'bg-[#7000FF] text-white hover:bg-[#6000E0]'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {!customerInfo.phone || !customerInfo.location || customerInfo.phone.length < 12
+                  {!customerInfo.phone || !customerInfo.location || customerInfo.phone.length < 13
                     ? 'Telefon va lokatsiyani to\'ldiring'
                     : 'Buyurtma berish'
                   }
