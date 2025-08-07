@@ -16,7 +16,17 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
   // API'dan kategoriyalarni olish
   useEffect(() => {
     console.log('Fetching categories from API...');
-    fetch('http://95.130.227.121:8000/api/categories')
+    
+    // Telegram mini app da ishlayotganini aniqlash
+    const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
+    console.log('Is Telegram WebApp:', isTelegramWebApp);
+    
+    fetch('https://95.130.227.121:8000/api/categories', {
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+        'User-Agent': 'TelegramWebApp'
+      }
+    })
       .then(res => {
         console.log('API response status:', res.status);
         if (!res.ok) {
@@ -30,15 +40,41 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(error => {
         console.error('Error loading categories:', error);
+        // Fallback uchun HTTP ga urinish
+        return fetch('http://95.130.227.121:8000/api/categories', {
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'User-Agent': 'TelegramWebApp'
+          }
+        });
+      })
+      .then(res => {
+        if (res && res.ok) {
+          return res.json();
+        }
+        throw new Error('Both HTTPS and HTTP failed');
+      })
+      .then(data => {
+        if (data) {
+          console.log('Categories loaded (fallback):', data.length);
+          setCategories(data);
+        }
+      })
+      .catch(error => {
+        console.error('All API attempts failed:', error);
         setCategories([]);
       });
   }, []);
 
   // Kategoriya qo'shish
   const addCategory = (category: any) => {
-    fetch('http://95.130.227.121:8000/api/categories', {
+    fetch('https://95.130.227.121:8000/api/categories', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'User-Agent': 'TelegramWebApp'
+      },
       body: JSON.stringify({ ...category, id: String(category.id) })
     })
       .then(res => {
@@ -55,8 +91,12 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
 
   // Kategoriya o'chirish (backendga so'rov yuboriladi)
   const deleteCategory = (categoryId: string) => {
-    fetch('http://95.130.227.121:8000/api/categories/' + String(categoryId), {
-      method: 'DELETE'
+    fetch('https://95.130.227.121:8000/api/categories/' + String(categoryId), {
+      method: 'DELETE',
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+        'User-Agent': 'TelegramWebApp'
+      }
     })
       .then(res => {
         if (!res.ok) {
