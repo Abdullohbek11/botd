@@ -153,7 +153,7 @@ export function CartPage() {
                   Telefon raqami *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-500 pointer-events-none">+998</span>
+                  <span className="absolute left-3 top-2 text-gray-500 pointer-events-none">+998 </span>
                   <input
                     type="text"
                     required
@@ -166,7 +166,7 @@ export function CartPage() {
                       value = value.slice(0, 9);
                       setCustomerInfo(prev => ({ ...prev, phone: '+998' + value }));
                     }}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-12 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-16 focus:ring-2 focus:ring-[#7000FF] focus:border-transparent"
                     maxLength={9}
                   />
                 </div>
