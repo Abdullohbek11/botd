@@ -11,7 +11,7 @@ export function CartPage() {
   const { createOrder } = useOrders();
   const [showCheckout, setShowCheckout] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({
-    phone: '',
+    phone: '+998',
     location: '',
     address: '',
     name: ''
@@ -77,7 +77,7 @@ export function CartPage() {
     createOrder(items, customerInfo);
     clearCart();
     setShowCheckout(false);
-    setCustomerInfo({ phone: '', location: '', address: '', name: '' });
+    setCustomerInfo({ phone: '+998', location: '', address: '', name: '' });
     
     alert('Buyurtma muvaffaqiyatli yuborildi! Tez orada siz bilan bog\'lanamiz.');
   };
@@ -153,7 +153,7 @@ export function CartPage() {
                   Telefon raqami *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-500">+998</span>
+                  <span className="absolute left-3 top-2 text-gray-500 pointer-events-none">+998</span>
                   <input
                     type="tel"
                     required
